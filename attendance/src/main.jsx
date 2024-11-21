@@ -13,6 +13,7 @@ import Hostel from './hostel'
 import Placement from './placement'
 import Circular from './circular'
 import Timetable from './timetable'
+import Academic from './Academic'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -30,6 +31,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <Route path="/placement" element={<Placement />} />
       <Route path="/circular" element={<Circular />} />
       <Route path="/timetable" element={<Timetable />} />
+      <Route path="/academic" element={<Academic />} />
     </Routes>
   </Router>
 )

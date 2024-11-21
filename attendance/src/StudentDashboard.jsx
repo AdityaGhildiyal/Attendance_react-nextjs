@@ -16,6 +16,7 @@ import Fee from './fee'
 import About from './About'
 import Contact from './ContactUs'
 import Services from './Services'
+import Academic from './Academic'
 
 export default function StudentDashboard({ onLogout }) {
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -95,7 +96,7 @@ export default function StudentDashboard({ onLogout }) {
 
   const cards = [
     { title: "Timetable", icon: Calendar, onClick: () => setShowTimetable(true) },
-    { title: "Academic", icon: Book },
+    { title: "Academic", icon: Book, onClick: () => setActivePage('academic') },
     { title: "Fee", icon: DollarSign, onClick: () => setActivePage('fee') },
     { title: "Circular", icon: FileText, onClick: () => setActivePage('circular') },
     { title: "Exam", icon: FileText },
@@ -136,6 +137,10 @@ export default function StudentDashboard({ onLogout }) {
 
   if (activePage === 'fee') {
     return <Fee onBack={() => setActivePage('dashboard')} />
+  }
+
+  if (activePage === 'academic') {
+    return <Academic onBack={() => setActivePage('dashboard')} />
   }
 
   if(activePage === 'services'){
