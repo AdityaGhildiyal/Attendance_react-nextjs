@@ -6,6 +6,7 @@ import { ArrowLeft, Phone, Mail, VoicemailIcon as Fax, MapPin, Globe, Facebook, 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import Header from "@/components/Header"; // Import the Header component
 
 export default function Contact({ onBack }) {
   const contactSections = [
@@ -126,16 +127,7 @@ export default function Contact({ onBack }) {
 
   return (
     <div className="min-h-screen bg-black text-white p-8 relative overflow-hidden">
-      {/* Header */}
-      <header className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-          Contact Us
-        </h1>
-        <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Dashboard
-        </Button>
-      </header>
+      <Header onLogout={onBack} setActivePage={() => {}} /> {/* Use the Header component */}
 
       {/* Main content */}
       <Card className="w-full max-w-4xl mx-auto bg-white/10 backdrop-blur-md shadow-xl rounded-xl overflow-hidden text-gray-100">

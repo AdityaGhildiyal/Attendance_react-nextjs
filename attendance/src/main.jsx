@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import App from './App'
 import Login from './Login'
 import StudentDashboard from './StudentDashboard'
@@ -14,6 +14,7 @@ import Placement from './placement'
 import Circular from './circular'
 import Timetable from './timetable'
 import Academic from './Academic'
+import Exam from './Exam'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -32,6 +33,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <Route path="/circular" element={<Circular />} />
       <Route path="/timetable" element={<Timetable />} />
       <Route path="/academic" element={<Academic />} />
+      <Route path="/exam" element={<Exam />} />
+      <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
   </Router>
 )

@@ -273,7 +273,7 @@ const Academic = ({ onBack }) => {
                         placeholder="Your feedback..."
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
-                        className="w-full p-2 rounded bg-gray-700 text-white"
+                        className="w-full p-2 rounded bg-gray-700 text-black"
                       />
                     </div>
                     <Button type="submit">Submit Feedback</Button>
@@ -335,34 +335,34 @@ const Academic = ({ onBack }) => {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-gray-800 text-white border border-gray-600">
           <DialogHeader>
-            <DialogTitle>Feedback Submitted</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl text-blue-400">Feedback Submitted</DialogTitle>
+            <DialogDescription className="text-gray-300">
               Thank you for your feedback. Your input is valuable to us and helps improve our teaching quality.
             </DialogDescription>
           </DialogHeader>
-          <Button onClick={() => setIsDialogOpen(false)}>Close</Button>
+          <Button onClick={() => setIsDialogOpen(false)} className="bg-green-500 hover:bg-green-600 text-white">Close</Button>
         </DialogContent>
       </Dialog>
 
       <Dialog open={excuseDialogOpen} onOpenChange={setExcuseDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-gray-800 text-white border border-gray-600">
           <DialogHeader>
-            <DialogTitle>Request Attendance Excuse</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl text-blue-400">Request Attendance Excuse</DialogTitle>
+            <DialogDescription className="text-gray-300">
               You are requesting an excuse for your absence on {excuseDate}. Please provide a reason for your absence.
             </DialogDescription>
           </DialogHeader>
           <Textarea
             placeholder="Reason for absence..."
-            className="w-full p-2 rounded bg-gray-700 text-white"
+            className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600"
           />
-          <Button onClick={submitExcuseRequest}>Submit Request</Button>
+          <Button onClick={submitExcuseRequest} className="bg-green-500 hover:bg-green-600 text-white">Submit Request</Button>
         </DialogContent>
       </Dialog>
     </div>
   )
 }
 
-export default Academic 
+export default Academic

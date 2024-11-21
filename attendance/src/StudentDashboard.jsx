@@ -17,6 +17,8 @@ import About from './About'
 import Contact from './ContactUs'
 import Services from './Services'
 import Academic from './Academic'
+import Exam from './Exam'
+import Header from "@/components/Header"; 
 
 export default function StudentDashboard({ onLogout }) {
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -82,7 +84,7 @@ export default function StudentDashboard({ onLogout }) {
 
   const subjects = [
     { name: "Data Structures", code: "CS301", faculty: "Dr. Smith", total: 30, attended: 28, percentage: 93 },
-    { name: "Database Systems", code: "CS302", faculty: "Prof. Johnson", total: 25, attended: 22, percentage: 88 },
+    { name: "Database Systems", code: "CS302", faculty: "Prof. Johnson", total: 25, attended: 18, percentage: 72},
     { name: "Web Development", code: "CS303", faculty: "Ms. Williams", total: 28, attended: 26, percentage: 93 },
     { name: "Machine Learning", code: "CS304", faculty: "Dr. Brown", total: 32, attended: 30, percentage: 94 }
   ]
@@ -99,7 +101,7 @@ export default function StudentDashboard({ onLogout }) {
     { title: "Academic", icon: Book, onClick: () => setActivePage('academic') },
     { title: "Fee", icon: DollarSign, onClick: () => setActivePage('fee') },
     { title: "Circular", icon: FileText, onClick: () => setActivePage('circular') },
-    { title: "Exam", icon: FileText },
+    { title: "Exam", icon: FileText, onClick: () => setActivePage('exam') },
     { title: "Placement", icon: Briefcase, onClick: () => setActivePage('placement') },
     { title: "Hostel", icon: Home, onClick: () => setActivePage('hostel') },
     { title: "Grievance", icon: MessageSquare, onClick: () => setActivePage('grievance') },
@@ -147,8 +149,13 @@ export default function StudentDashboard({ onLogout }) {
     return <Services onBack={()=> setActivePage('dashboard')} />
   }
 
+  if (activePage === 'exam') {
+    return <Exam onBack={() => setActivePage('dashboard')} />
+  }
+
   return (
     <div className="min-h-screen bg-black text-white p-8 relative overflow-hidden">
+      <Header onLogout={onLogout} setActivePage={setActivePage} /> {/* Use the Header component */}
       {/* Animated particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {particles.map((particle, index) => (
@@ -164,20 +171,6 @@ export default function StudentDashboard({ onLogout }) {
           />
         ))}
       </div>
-
-      {/* Header */}
-      <header className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-          GEU
-        </h1>
-        <nav className="flex space-x-4">
-          <Button variant="ghost" onClick={() => setActivePage('dashboard')}>Home</Button>
-          <Button variant="ghost" onClick={() => setActivePage('about')}>About</Button>
-          <Button variant="ghost" onClick={()=> setActivePage('contact')}>Contact Us</Button>
-          <Button variant="ghost" onClick={()=> setActivePage('services')}>Services</Button>
-          <Button variant="ghost" onClick={onLogout}>Logout</Button>
-        </nav>
-      </header>
 
       {/* Main content */}
       <Card className="w-full max-w-4xl mx-auto bg-white/10 backdrop-blur-md shadow-xl rounded-xl overflow-hidden text-gray-100">
