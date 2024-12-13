@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Button } from "../components/ui/button"
 import { GraduationCap, UserCog } from 'lucide-react'
@@ -25,7 +25,7 @@ export default function Home() {
           </Button>
           <Button 
             className="w-full h-16 text-lg bg-indigo-600 hover:bg-indigo-700 text-white"
-            onClick={() => router.push('/teacher/TeacherLogin')}
+            onClick={() => router.push('/Teachers/teacherlogin')}
           >
             <UserCog className="mr-2 h-6 w-6" />
             Login as Teacher

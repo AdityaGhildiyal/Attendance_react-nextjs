@@ -2,16 +2,21 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { ChevronRight, User } from 'lucide-react'
+import { useRouter } from 'next/router'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "../../components/ui/card"
+import { Input } from "../../components/ui/input"
+import { Button } from "../../components/ui/button"
+import { Label } from "../../components/ui/label"
+import {ChevronRight, User , AlertCircle } from 'lucide-react'
+import {Alert , AlertDescription} from '../../components/ui/alert'
 
 export default function TeacherLogin() {
+  const router = useRouter()
   const [particles, setParticles] = useState([])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error , setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     const createParticles = () => {
@@ -48,7 +53,11 @@ export default function TeacherLogin() {
   const handleSubmit = (e) => {
     e.preventDefault()
     // Handle login logic here
-    console.log('Login attempted with:', { email, password })
+    if (email && password) {
+      router.push('/Teachers/teacherdashboard')
+    } else {
+      setError('Please enter your email and password.')
+    }
   }
 
   return (
