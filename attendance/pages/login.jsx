@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react'
 import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card"
 import { BookOpen, Lock, User, Sparkles, Eye, EyeOff } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { useRouter } from 'next/router';
 
 export default function Login({ setIsLoggedIn }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [role, setRole] = useState('student')  // Add state to handle role selection
   const [particles, setParticles] = useState([])
   const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter();
 
   useEffect(() => {
     const createParticles = () => {
@@ -44,11 +47,18 @@ export default function Login({ setIsLoggedIn }) {
   }, [])
 
   const handleLogin = (e) => {
-    e.preventDefault()
-    // Add your login logic here
+    e.preventDefault();
     if (username && password) {
       localStorage.setItem('isLoggedIn', 'true');
-      setIsLoggedIn(true) // This will trigger the redirect in _app.js
+      localStorage.setItem('role', role);  // Store the selected role in localStorage
+      setIsLoggedIn(true);  // This will trigger the redirect in _app.js
+
+      // Redirect based on the selected role
+      if (role === "teacher") {
+        router.push("/teacher/TeacherLogin");
+      } else {
+        router.push("/students/StudentLogin");
+      }
     }
   }
 
@@ -76,7 +86,7 @@ export default function Login({ setIsLoggedIn }) {
             <BookOpen className="h-16 w-16 text-white" />
             <Sparkles className="h-6 w-6 text-yellow-300 absolute -top-2 -right-2 animate-pulse" />
           </div>
-          <CardTitle className="text-3xl font-bold text-center text-white">GEU Student Login</CardTitle>
+          <CardTitle className="text-3xl font-bold text-center text-white">GEU Login</CardTitle>
         </CardHeader>
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
@@ -115,6 +125,21 @@ export default function Login({ setIsLoggedIn }) {
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role" className="text-sm font-medium text-white">Role</Label>
+              <div className="relative">
+                <select
+                  id="role"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="pl-10 bg-white/20 border-white/30 text-white placeholder-white/50 w-full"
+                  required
+                >
+                  <option value="student">Student</option>
+                  <option value="teacher">Teacher</option>
+                </select>
               </div>
             </div>
           </CardContent>

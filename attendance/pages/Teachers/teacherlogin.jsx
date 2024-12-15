@@ -7,15 +7,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from "../../components/ui/input"
 import { Button } from "../../components/ui/button"
 import { Label } from "../../components/ui/label"
-import {ChevronRight, User , AlertCircle } from 'lucide-react'
-import {Alert , AlertDescription} from '../../components/ui/alert'
+import { ChevronRight } from 'lucide-react'
+import { Alert, AlertDescription } from '../../components/ui/alert'
+import { signIn } from 'next-auth/react' // Import signIn for authentication
 
 export default function TeacherLogin() {
   const router = useRouter()
   const [particles, setParticles] = useState([])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error , setError] = useState('')
+  const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -50,13 +51,24 @@ export default function TeacherLogin() {
     return () => clearInterval(intervalId)
   }, [])
 
-  const handleSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
-    // Handle login logic here
-    if (email && password) {
-      router.push('/Teachers/teacherdashboard')
+    setError('') // Clear previous error message
+    setIsLoading(true)
+
+    const res = await signIn('credentials', {
+      redirect: false,
+      email,
+      password,
+      role: 'teacher', // Make sure to include the role as 'teacher'
+    })
+
+    setIsLoading(false)
+
+    if (res?.error) {
+      setError('Invalid email or password. Please try again.')
     } else {
-      setError('Please enter your email and password.')
+      router.replace('/Teachers/teacherdashboard') 
     }
   }
 
@@ -93,7 +105,7 @@ export default function TeacherLogin() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleLogin}>
             <div className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -119,14 +131,22 @@ export default function TeacherLogin() {
                 />
               </div>
             </div>
+
+            {/* Display error alert if there's any error */}
+            {error && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
           </form>
         </CardContent>
         <CardFooter>
-          <Button 
+          <Button
             className="w-full h-12 text-lg bg-gradient-to-r from-purple-400 to-pink-600 hover:from-purple-500 hover:to-pink-700"
-            onClick={handleSubmit}
+            onClick={handleLogin}
+            disabled={isLoading}
           >
-            Login <ChevronRight className="ml-2 h-5 w-5" />
+            {isLoading ? 'Logging in...' : 'Login'} <ChevronRight className="ml-2 h-5 w-5" />
           </Button>
         </CardFooter>
         <div className="mt-6 text-center">

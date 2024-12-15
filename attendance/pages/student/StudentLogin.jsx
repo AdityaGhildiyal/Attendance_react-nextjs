@@ -1,62 +1,74 @@
-'use client'
+'use client';
 
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Lock, User, Sparkles, Eye, EyeOff } from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { signIn } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { BookOpen, Lock, User, Sparkles, Eye, EyeOff } from 'lucide-react';
 
 export default function StudentLogin() {
-  const router = useRouter()
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [particles, setParticles] = useState([])
-  const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [particles, setParticles] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const createParticles = () => {
-      const newParticles = []
+      const newParticles = [];
       for (let i = 0; i < 50; i++) {
         newParticles.push({
           x: Math.random() * window.innerWidth,
           y: Math.random() * window.innerHeight,
           size: Math.random() * 5 + 1,
           speedX: Math.random() * 3 - 1.5,
-          speedY: Math.random() * 3 - 1.5
-        })
+          speedY: Math.random() * 3 - 1.5,
+        });
       }
-      setParticles(newParticles)
-    }
+      setParticles(newParticles);
+    };
 
-    createParticles()
+    createParticles();
 
     const animateParticles = () => {
-      setParticles(prevParticles =>
-        prevParticles.map(particle => ({
+      setParticles((prevParticles) =>
+        prevParticles.map((particle) => ({
           ...particle,
           x: (particle.x + particle.speedX + window.innerWidth) % window.innerWidth,
-          y: (particle.y + particle.speedY + window.innerHeight) % window.innerHeight
+          y: (particle.y + particle.speedY + window.innerHeight) % window.innerHeight,
         }))
-      )
+      );
+    };
+
+    const intervalId = setInterval(animateParticles, 50);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setErrorMessage('');
+
+    const res = await signIn('credentials', {
+      redirect: false,
+      email,
+      password,
+    });
+
+    if (res?.error) {
+      setErrorMessage('Invalid email or password. Please try again.');
+    } else {
+      router.replace('/student/StudentDashboard');
     }
-
-    const intervalId = setInterval(animateParticles, 50)
-
-    return () => clearInterval(intervalId)
-  }, [])
-
-  const handleLogin = (e) => {
-    e.preventDefault()
-    if (username && password) {
-      router.replace('/student/StudentDashboard')
-    }
-  }
+  };
 
   const handleTogglePassword = () => {
-    setShowPassword(prev => !prev)
-  }
+    setShowPassword((prev) => !prev);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black p-4 overflow-hidden relative">
@@ -83,14 +95,14 @@ export default function StudentLogin() {
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-sm font-medium text-white">Username</Label>
+              <Label htmlFor="email" className="text-sm font-medium text-white">Email</Label>
               <div className="relative">
                 <Input
-                  id="username"
-                  type="text"
-                  placeholder="Enter your username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 bg-white/20 border-white/30 text-white placeholder-white/50"
                   required
                 />
@@ -102,7 +114,7 @@ export default function StudentLogin() {
               <div className="relative">
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -110,15 +122,16 @@ export default function StudentLogin() {
                   required
                 />
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/70" />
-                <button 
-                  type="button" 
-                  onClick={handleTogglePassword} 
+                <button
+                  type="button"
+                  onClick={handleTogglePassword}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-white"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
+            {errorMessage && <p className="text-red-500 text-xs">{errorMessage}</p>}
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full bg-white text-indigo-600 hover:bg-gray-100">
@@ -131,5 +144,5 @@ export default function StudentLogin() {
         </form>
       </Card>
     </div>
-  )
+  );
 }

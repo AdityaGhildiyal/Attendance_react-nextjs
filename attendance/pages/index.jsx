@@ -24,7 +24,7 @@ export default function Home() {
             Login as Student
           </Button>
           <Button 
-            className="w-full h-16 text-lg bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="w-full h-16 text-lg bg-white hover:bg-gray-100 text-indigo-600"
             onClick={() => router.push('/Teachers/teacherlogin')}
           >
             <UserCog className="mr-2 h-6 w-6" />

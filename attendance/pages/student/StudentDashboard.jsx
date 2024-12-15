@@ -17,8 +17,11 @@ function StudentDashboard() {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [particles, setParticles] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const [studentInfo, setStudentInfo] = useState(null);
+  const [timetable, setTimetable] = useState([])
+  const [subjects, setSubjects] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Use either context scroll position or local state as fallback
   const scrollPosition = scrollContext?.scrollPosition ?? 0
   const setScrollPosition = scrollContext?.setScrollPosition ?? (() => {})
 
@@ -64,6 +67,89 @@ function StudentDashboard() {
     return () => clearInterval(intervalId)
   }, [])
 
+  useEffect(() => {
+    const fetchStudentInfo = async () => {
+      try {
+        const res = await fetch('../api/studentinfo');
+        const data = await res.json();
+        if (res.ok) {
+          setStudentInfo(data);
+        } else {
+          console.log('Error:', data.message);
+        }
+      } catch (error) {
+        console.log('Error fetching student info:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudentInfo();
+  }, []);
+
+  
+  useEffect(() => {
+    // Fetch timetable data
+    const fetchTimetable = async () => {
+      console.log('Fetching timetable data...'); // Log when fetch is called
+      try {
+        const response = await fetch('/api/timetable');  // Replace with your actual API endpoint
+        const data = await response.json();
+  
+        // Log the fetched data to check its structure
+        console.log('Fetched data:', data);  
+  
+        if (!Array.isArray(data) || data.length === 0) {
+          console.log('No timetable data available.');
+          return;
+        }
+  
+        // Handle missing times or missing fields
+        const processedTimetable = data.map(item => {
+          if (!item.startTime || !item.endTime) {
+            console.log(`Time information is missing for ${item.subject}`);
+            return { ...item, startTime: 'N/A', endTime: 'N/A' };  // Add a fallback value
+          }
+          return item;
+        });
+  
+        setTimetable(processedTimetable);  // Set timetable data into state
+      } catch (error) {
+        console.error('Error fetching timetable:', error);
+      }
+    };
+  
+    fetchTimetable();
+  }, []);
+  
+  // Log timetable whenever it changes
+  useEffect(() => {
+    console.log('Timetable state updated:', timetable); // Log the state whenever it changes
+  }, [timetable]);
+
+  
+
+  useEffect(() => {
+    // Fetch the subject-wise attendance data
+    const fetchAttendance = async () => {
+      try {
+        const response = await fetch("/api/attendance");
+        const data = await response.json();
+
+        if (Array.isArray(data)) {
+          setSubjects(data); // Set subjects to the state if the response is an array
+        } else {
+          console.error("Failed to load attendance data", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching attendance data:", error);
+      }
+    };
+
+    fetchAttendance(); // Call the function to fetch data when component mounts
+  }, []);
+  
+
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn')
     router.push('/')
@@ -85,41 +171,12 @@ function StudentDashboard() {
   const formatTime = (date) => {
     return new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }).format(date);
   };
-  
-  
 
-  const studentInfo = {
-    name: "Aditya Ghildiyal",
-    email: "adityaghildiyal@proton.me",
-    contact: "+91 8439906540",
-    fatherName: "X Ghildiyal",
-    motherName: "Y Ghildiyal",
-    dob: "08/06/2005",
-    campus: "Lyon",
-    course: "Computer Science",
-    specialization: "Artificial Intelligence",
-    yearSem: "3rd Year / 6th Semester",
-    branch: "CSE",
-    section: "A2",
-    classRollNo: "CS2001",
-    universityRollNo: "U20CS001",
-    highschoolPercentage: "92%",
-    intermediatePercentage: "88%"
+  if (loading || !studentInfo) {
+    return <div>Loading...</div>;
   }
 
-  const subjects = [
-    { name: "Data Structures", code: "CS301", faculty: "Dr. Smith", total: 30, attended: 28, percentage: 93 },
-    { name: "Database Systems", code: "CS302", faculty: "Prof. Johnson", total: 25, attended: 18, percentage: 72 },
-    { name: "Web Development", code: "CS303", faculty: "Ms. Williams", total: 28, attended: 26, percentage: 93 },
-    { name: "Machine Learning", code: "CS304", faculty: "Dr. Brown", total: 32, attended: 30, percentage: 94 }
-  ]
-
-  const timetable = [
-    { subject: "Data Structures", time: "09:00 AM", duration: "1 hour" },
-    { subject: "Database Systems", time: "11:00 AM", duration: "1 hour" },
-    { subject: "Web Development", time: "02:00 PM", duration: "1 hour" },
-    { subject: "Machine Learning", time: "04:00 PM", duration: "1 hour" }
-  ]
+  
 
   const navigationCards = [
     { title: "Timetable", icon: Calendar, path: "timetable" },
@@ -194,61 +251,79 @@ function StudentDashboard() {
             </Card>
           </section>
 
+          
           {/* Timetable */}
           <section className="mb-8">
             <h3 className="text-xl font-semibold mb-4">Today's Timetable</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {timetable.map((item, index) => {
-                // Parse times
-                const classStartTime = new Date();
-                const [hour, minute] = item.time.split(/[: ]/);
-                classStartTime.setHours(hour % 12 + (item.time.includes("PM") ? 12 : 0));
-                classStartTime.setMinutes(minute);
-
-                const classEndTime = new Date(classStartTime);
-                classEndTime.setMinutes(classStartTime.getMinutes() + parseInt(item.duration.split(" ")[0]) * 60);
-
-                const now = currentTime;
-                let classStatus = "Upcoming";
-                if (now >= classStartTime && now <= classEndTime) {
-                  classStatus = "Ongoing";
-                } else if (now > classEndTime) {
-                  classStatus = "Completed";
-                }
-
-                const progress =
-                  classStatus === "Ongoing"
-                    ? ((now - classStartTime) / (classEndTime - classStartTime)) * 100
-                    : 0;
-
-                return (
-                  <Card key={index} className="bg-gray-700 shadow-md hover:shadow-lg transition-all">
-                    <CardHeader>
-                      <CardTitle className="text-lg font-bold">{item.subject}</CardTitle>
-                      <CardDescription className="text-sm text-gray-300">
-                        {item.time} - Duration: {item.duration}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex justify-between mb-2 text-gray-300">
-                        <span>Status: <span className={`font-semibold ${classStatus === "Ongoing" ? "text-green-400" : classStatus === "Completed" ? "text-red-400" : "text-yellow-400"}`}>{classStatus}</span></span>
-                        <span>Ends at: {formatTime(classEndTime)}</span>
+              {Array.isArray(timetable) && timetable.length > 0 ? (
+                timetable.map((item, index) => {
+                  // Handle missing startTime and endTime
+                  if (!item.startTime || !item.endTime) {
+                    return (
+                      <div key={index} className="text-gray-300">
+                        <p>Time information is missing for {item.subject}.</p>
                       </div>
-                      <div className="relative h-4 w-full bg-gray-600 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${classStatus === "Ongoing" ? "bg-blue-500" : "bg-gray-400"}`}
-                          style={{ width: `${progress}%` }}
-                        ></div>
-                      </div>
-                      {classStatus === "Ongoing" && (
-                        <p className="text-right mt-2 text-sm text-gray-300">
-                          {Math.ceil((classEndTime - now) / 60000)} minutes left
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                    );
+                  }
+
+                  // Parse start and end times from the schema (startTime and endTime)
+                  const classStartTime = new Date();
+                  const [startHour, startMinute] = item.startTime.split(/[: ]/);
+                  classStartTime.setHours(startHour % 12 + (item.startTime.includes("PM") ? 12 : 0));
+                  classStartTime.setMinutes(startMinute);
+
+                  const classEndTime = new Date(classStartTime);
+                  const [endHour, endMinute] = item.endTime.split(/[: ]/);
+                  classEndTime.setHours(endHour % 12 + (item.endTime.includes("PM") ? 12 : 0));
+                  classEndTime.setMinutes(endMinute);
+
+                  const now = new Date();
+                  let classStatus = "Upcoming";
+                  if (now >= classStartTime && now <= classEndTime) {
+                    classStatus = "Ongoing";
+                  } else if (now > classEndTime) {
+                    classStatus = "Completed";
+                  }
+
+                  const progress =
+                    classStatus === "Ongoing"
+                      ? ((now - classStartTime) / (classEndTime - classStartTime)) * 100
+                      : 0;
+
+                  return (
+                    <Card key={index} className="bg-gray-700 shadow-md hover:shadow-lg transition-all">
+                      <CardHeader>
+                        <CardTitle className="text-lg font-bold">{item.subject}</CardTitle>
+                        <CardDescription className="text-sm text-gray-300">
+                          {item.startTime} - {item.endTime} - Duration: {item.duration}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex justify-between mb-2 text-gray-300">
+                          <span>Status: <span className={`font-semibold ${classStatus === "Ongoing" ? "text-green-400" : classStatus === "Completed" ? "text-red-400" : "text-yellow-400"}`}>{classStatus}</span></span>
+                          <span>Ends at: {formatTime(classEndTime)}</span>
+                        </div>
+                        <div className="relative h-4 w-full bg-gray-600 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${classStatus === "Ongoing" ? "bg-blue-500" : "bg-gray-400"}`}
+                            style={{ width: `${progress}%` }}
+                          ></div>
+                        </div>
+                        {classStatus === "Ongoing" && (
+                          <p className="text-right mt-2 text-sm text-gray-300">
+                            {Math.ceil((classEndTime - now) / 60000)} minutes left
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              ) : (
+                <div className="text-center text-gray-300">
+                  {timetable.message || "No timetable available."}
+                </div>
+              )}
             </div>
           </section>
 
@@ -277,26 +352,36 @@ function StudentDashboard() {
 
           {/* Subject-wise Attendance */}
           <section className="mb-8">
-            <h3 className="text-xl font-semibold mb-4">Subject-wise Attendance</h3>
-            <div className="space-y-4">
-              {subjects.map(subject => (
-                <Card key={subject.code} className="bg-gray-700">
-                  <CardHeader>
-                    <CardTitle>{subject.name} ({subject.code})</CardTitle>
-                    <CardDescription className="text-gray-300">Faculty: {subject.faculty}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between mb-2 text-gray-300">
-                      <span>Total Lectures: {subject.total}</span>
-                      <span>Attended: {subject.attended}</span>
-                    </div>
-                    <Progress value={subject.percentage} className="w-full" />
-                    <div className="text-right mt-2 text-gray-300">{subject.percentage}%</div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
+        <h3 className="text-xl font-semibold mb-4">Subject-wise Attendance</h3>
+        <div className="space-y-4">
+          {subjects.length > 0 ? (
+            subjects.map((subject) => (
+              <Card key={subject.subjectName} className="bg-gray-700">
+                <CardHeader>
+                  <CardTitle>
+                    {subject.subjectName} 
+                  </CardTitle>
+                  <CardDescription className="text-gray-300">
+                    Faculty: {subject.faculty}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-between mb-2 text-gray-300">
+                    <span>Total Lectures: {subject.totalLectures}</span>
+                    <span>Attended: {subject.attended}</span>
+                  </div>
+                  <Progress value={subject.attendancePercentage} className="w-full" />
+                  <div className="text-right mt-2 text-gray-300">
+                    {subject.attendancePercentage}%
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div className="text-center text-gray-300">No attendance data available.</div>
+          )}
+        </div>
+      </section>
         </CardContent>
       </Card>
     </div>

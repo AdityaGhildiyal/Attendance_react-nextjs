@@ -1,40 +1,57 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState , useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
-import { Button } from "../../components/ui/button"
-import { Input } from "../../components/ui/input"
-import { Label } from "../../components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table"
-import { Calendar } from "../../components/ui/calendar"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
-import { Textarea } from "../../components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar"
-import { Progress } from "../../components/ui/progress"
-import { Bell, Book, Calendar as CalendarIcon, CheckCircle, ChevronRight, Clock, FileText, LogOut, MessageSquare, User, Users, Video, Brain } from 'lucide-react'
+import { useRouter } from 'next/router'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Calendar } from "@/components/ui/calendar"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Progress } from "@/components/ui/progress"
+import { Bell, CalendarIcon, CheckCircle, LogOut, User, Video, Brain, X } from 'lucide-react'
 
 export default function EnhancedTeacherDashboard() {
+  const router = useRouter(); 
   const [activeTab, setActiveTab] = useState("overview")
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [selectedStudent, setSelectedStudent] = useState(null)
+  const [teacherInfo, setteacherInfo] = useState(null);
+  const [isGeneratingLessonPlan, setIsGeneratingLessonPlan] = useState(false)
+  const [lessonPlan, setLessonPlan] = useState(null)
+  const [loading, setLoading] = useState(false);
 
-  const teacherInfo = {
-    name: "Dr. Jane Smith",
-    email: "jane.smith@example.edu",
-    department: "Computer Science",
-    employeeId: "T12345",
-    joinDate: "2015-09-01",
-    specialization: "Artificial Intelligence",
-    course: "CS301: Advanced Artificial Intelligence"
-  }
+  useEffect(() => {
+    const fetchTeacherInfo = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('../api/teacherinfo');
+        const data = await res.json();
+        if (res.ok) {
+          setteacherInfo(data);
+        } else {
+          console.log('Error:', data.message);
+        }
+      } catch (error) {
+        console.log('Error fetching teacher info:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeacherInfo();
+  }, []);
 
   const upcomingClasses = [
-    { id: 1, topic: "Neural Networks", time: "10:00 AM", duration: "1 hour", room: "CS-301" },
-    { id: 2, topic: "Reinforcement Learning", time: "02:00 PM", duration: "2 hours", room: "CS-301" },
-    { id: 3, topic: "Natural Language Processing", time: "04:00 PM", duration: "1.5 hours", room: "CS-301" },
+    { id: 1, topic: "Neural Networks", time: "10:00 AM", duration: "1 hour", room: "CS-301", link: "https://meet.google.com/abc-defg-hij" },
+    { id: 2, topic: "Reinforcement Learning", time: "02:00 PM", duration: "2 hours", room: "CS-301", link: "https://meet.google.com/klm-nopq-rst" },
+    { id: 3, topic: "Natural Language Processing", time: "04:00 PM", duration: "1.5 hours", room: "CS-301", link: "https://meet.google.com/uvw-xyza-bcd" },
   ]
 
   const students = [
@@ -61,12 +78,8 @@ export default function EnhancedTeacherDashboard() {
     setSelectedStudent(student)
   }
 
-  const [isGeneratingLessonPlan, setIsGeneratingLessonPlan] = useState(false)
-  const [lessonPlan, setLessonPlan] = useState(null)
-
   const generateLessonPlan = () => {
     setIsGeneratingLessonPlan(true)
-    // Simulating API call to an AI service
     setTimeout(() => {
       setLessonPlan({
         topic: "Introduction to Neural Networks",
@@ -92,33 +105,32 @@ export default function EnhancedTeacherDashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
-      {/* Header */}
-      <header className="flex justify-between items-center mb-8">
-        <motion.h1 
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600"
-        >
-         Teacher Dashboard
-        </motion.h1>
-        <nav className="flex space-x-4">
-          <Button variant="ghost"><Bell className="mr-2 h-4 w-4" /> Notifications</Button>
-          <Button variant="ghost"><User className="mr-2 h-4 w-4" /> Profile</Button>
-          <Button variant="ghost"><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
-        </nav>
-      </header>
-
-      {/* Main content */}
-      <Card className="w-full max-w-6xl mx-auto bg-gray-900 shadow-xl rounded-xl overflow-hidden text-gray-100">
+      <Card className="w-full max-w-7xl mx-auto bg-gray-900 shadow-xl rounded-xl overflow-hidden text-white border-gray-800">
         <CardContent className="p-6">
+          <header className="flex justify-between items-center mb-8">
+            <motion.h1 
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-3xl font-bold text-white"
+            >
+              Teacher Dashboard
+            </motion.h1>
+            <nav className="flex space-x-4">
+              <Button variant="outline"><Bell className="mr-2 h-4 w-4" /> Notifications</Button>
+              <Button variant="outline"><User className="mr-2 h-4 w-4" /> Profile</Button>
+              <Button variant="outline"><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
+            </nav>
+          </header>
+
           <Tabs defaultValue="overview" className="space-y-4" onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-5 gap-4 bg-gray-800">
-              <TabsTrigger value="overview" className="data-[state=active]:bg-purple-700">Overview</TabsTrigger>
-              <TabsTrigger value="students" className="data-[state=active]:bg-purple-700">Students</TabsTrigger>
-              <TabsTrigger value="assignments" className="data-[state=active]:bg-purple-700">Assignments</TabsTrigger>
-              <TabsTrigger value="schedule" className="data-[state=active]:bg-purple-700">Schedule</TabsTrigger>
-              <TabsTrigger value="lessonplan" className="data-[state=active]:bg-purple-700">Lesson Plan</TabsTrigger>
+            <TabsList className="grid grid-cols-6 gap-4 bg-gray-800">
+              <TabsTrigger value="overview" className="data-[state=active]:bg-white data-[state=active]:text-black">Overview</TabsTrigger>
+              <TabsTrigger value="students" className="data-[state=active]:bg-white data-[state=active]:text-black">Students</TabsTrigger>
+              <TabsTrigger value="assignments" className="data-[state=active]:bg-white data-[state=active]:text-black">Assignments</TabsTrigger>
+              <TabsTrigger value="schedule" className="data-[state=active]:bg-white data-[state=active]:text-black">Schedule</TabsTrigger>
+              <TabsTrigger value="lessonplan" className="data-[state=active]:bg-white data-[state=active]:text-black">Lesson Plan</TabsTrigger>
+              <TabsTrigger value="onlineclass" className="data-[state=active]:bg-white data-[state=active]:text-black">Online Class</TabsTrigger>
             </TabsList>
 
             <AnimatePresence mode="wait">
@@ -131,31 +143,46 @@ export default function EnhancedTeacherDashboard() {
               >
                 <TabsContent value="overview" className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="bg-gray-800">
-                      <CardHeader>
-                        <CardTitle>Teacher Information</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center space-x-4 mb-4">
-                          <Avatar className="w-16 h-16 border-2 border-purple-500">
-                            <AvatarImage src="/placeholder-avatar.jpg" />
-                            <AvatarFallback>{teacherInfo.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="text-xl font-semibold">{teacherInfo.name}</h3>
-                            <p className="text-gray-400">{teacherInfo.email}</p>
-                          </div>
-                        </div>
-                        <div className="space-y-2 text-gray-300">
-                          <p><strong>Department:</strong> {teacherInfo.department}</p>
-                          <p><strong>Employee ID:</strong> {teacherInfo.employeeId}</p>
-                          <p><strong>Join Date:</strong> {teacherInfo.joinDate}</p>
-                          <p><strong>Specialization:</strong> {teacherInfo.specialization}</p>
-                          <p><strong>Course:</strong> {teacherInfo.course}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-gray-800">
+  <Card className="bg-gray-800 border-gray-700">
+    <CardHeader>
+      <CardTitle>Teacher Information</CardTitle>
+    </CardHeader>
+    <CardContent>
+      {teacherInfo ? (
+        <div className="flex items-center space-x-4 mb-4">
+          {/* Profile Initials */}
+          <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center text-3xl font-bold text-white">
+            {teacherInfo.name 
+              ? teacherInfo.name.split(' ').map((n) => n[0]).join('') 
+              : "N/A"}
+          </div>
+
+          {/* Teacher Details */}
+          <div>
+            <h3 className="text-xl font-semibold">
+              {teacherInfo.name || "Unknown Name"}
+            </h3>
+            <p className="text-gray-400">{teacherInfo.email || "Unknown Email"}</p>
+          </div>
+        </div>
+      ) : (
+        // Fallback UI when `teacherInfo` is not available
+        <div className="text-gray-400">Loading teacher information...</div>
+      )}
+
+      {/* Teacher Info Details */}
+      {teacherInfo && (
+        <div className="space-y-2 text-gray-300">
+          <p><strong>Department:</strong> {teacherInfo.department || "N/A"}</p>
+          <p><strong>Employee ID:</strong> {teacherInfo.employeeId || "N/A"}</p>
+          <p><strong>Join Date:</strong> {teacherInfo.joinDate || "N/A"}</p>
+          <p><strong>Specialization:</strong> {teacherInfo.specialization || "N/A"}</p>
+          <p><strong>Course:</strong> {teacherInfo.course || "N/A"}</p>
+        </div>
+      )}
+    </CardContent>
+  </Card>
+                    <Card className="bg-gray-800 border-gray-700">
                       <CardHeader>
                         <CardTitle>Upcoming Classes</CardTitle>
                       </CardHeader>
@@ -167,7 +194,7 @@ export default function EnhancedTeacherDashboard() {
                                 <p className="font-semibold">{cls.topic}</p>
                                 <p className="text-sm text-gray-400">{cls.time} - {cls.duration}</p>
                               </div>
-                              <span className="text-sm bg-purple-600 px-2 py-1 rounded">{cls.room}</span>
+                              <span className="text-sm bg-white text-black px-2 py-1 rounded">{cls.room}</span>
                             </li>
                           ))}
                         </ul>
@@ -177,7 +204,7 @@ export default function EnhancedTeacherDashboard() {
                 </TabsContent>
 
                 <TabsContent value="students" className="space-y-4">
-                  <Card className="bg-gray-800">
+                  <Card className="bg-gray-800 border-gray-700">
                     <CardHeader>
                       <CardTitle>Student Information</CardTitle>
                     </CardHeader>
@@ -203,7 +230,7 @@ export default function EnhancedTeacherDashboard() {
                               </TableCell>
                               <TableCell>{student.grade}</TableCell>
                               <TableCell>
-                                <Button variant="secondary" size="sm" onClick={() => handleStudentClick(student)}>Analyze Attendance</Button>
+                                <Button variant="outline" size="sm" onClick={() => handleStudentClick(student)}>Analyze Attendance</Button>
                               </TableCell>
                             </TableRow>
                           ))}
@@ -212,7 +239,7 @@ export default function EnhancedTeacherDashboard() {
                     </CardContent>
                   </Card>
                   {selectedStudent && (
-                    <Card className="bg-gray-800">
+                    <Card className="bg-gray-800 border-gray-700">
                       <CardHeader>
                         <CardTitle>Attendance Analysis: {selectedStudent.name}</CardTitle>
                       </CardHeader>
@@ -221,9 +248,9 @@ export default function EnhancedTeacherDashboard() {
                           {selectedStudent.attendanceHistory.map((attendance, index) => (
                             <div
                               key={index}
-                              className={`w-8 h-8 ${attendance ? 'bg-green-500' : 'bg-red-500'} rounded-sm flex items-center justify-center`}
+                              className={`w-8 h-8 ${attendance ? 'bg-white' : 'bg-gray-600'} rounded-sm flex items-center justify-center`}
                             >
-                              {attendance ? <CheckCircle className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                              {attendance ? <CheckCircle className="w-4 h-4 text-black" /> : <X className="w-4 h-4 text-white" />}
                             </div>
                           ))}
                         </div>
@@ -234,7 +261,7 @@ export default function EnhancedTeacherDashboard() {
                 </TabsContent>
 
                 <TabsContent value="assignments" className="space-y-4">
-                  <Card className="bg-gray-800">
+                  <Card className="bg-gray-800 border-gray-700">
                     <CardHeader>
                       <CardTitle>Assignments and Exams</CardTitle>
                     </CardHeader>
@@ -255,7 +282,7 @@ export default function EnhancedTeacherDashboard() {
                               <TableCell>{assignment.dueDate}</TableCell>
                               <TableCell>{assignment.submitted}/{assignment.total}</TableCell>
                               <TableCell>
-                                <Button variant="secondary" size="sm">View Details</Button>
+                                <Button variant="outline" size="sm">View Details</Button>
                               </TableCell>
                             </TableRow>
                           ))}
@@ -264,9 +291,9 @@ export default function EnhancedTeacherDashboard() {
                       <div className="mt-4">
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button className="bg-purple-600 hover:bg-purple-700">Create New Assignment</Button>
+                            <Button variant="outline">Create New Assignment</Button>
                           </DialogTrigger>
-                          <DialogContent className="bg-gray-800 text-white">
+                          <DialogContent className="bg-gray-800 text-white border-gray-700">
                             <DialogHeader>
                               <DialogTitle>Create New Assignment</DialogTitle>
                               <DialogDescription>
@@ -288,12 +315,12 @@ export default function EnhancedTeacherDashboard() {
                               </div>
                               <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="description" className="text-right">
-                                Description
+                                  Description
                                 </Label>
                                 <Textarea id="description" className="col-span-3 bg-gray-700 text-white" />
                               </div>
                             </div>
-                            <Button type="submit" className="bg-purple-600 hover:bg-purple-700">Create Assignment</Button>
+                            <Button type="submit" variant="outline">Create Assignment</Button>
                           </DialogContent>
                         </Dialog>
                       </div>
@@ -302,7 +329,7 @@ export default function EnhancedTeacherDashboard() {
                 </TabsContent>
 
                 <TabsContent value="schedule" className="space-y-4">
-                  <Card className="bg-gray-800">
+                  <Card className="bg-gray-800 border-gray-700">
                     <CardHeader>
                       <CardTitle>Class Schedule</CardTitle>
                     </CardHeader>
@@ -313,7 +340,7 @@ export default function EnhancedTeacherDashboard() {
                             mode="single"
                             selected={selectedDate}
                             onSelect={setSelectedDate}
-                            className="rounded-md border bg-gray-700 text-white"
+                            className="rounded-md border border-gray-700 bg-gray-800 text-white"
                           />
                         </div>
                         <div className="w-full md:w-1/2">
@@ -328,12 +355,12 @@ export default function EnhancedTeacherDashboard() {
                           </ul>
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button className="mt-4 bg-purple-600 hover:bg-purple-700">
+                              <Button variant="outline" className="mt-4">
                                 <Video className="mr-2 h-4 w-4" />
                                 Schedule Online Class
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="bg-gray-800 text-white">
+                            <DialogContent className="bg-gray-800 text-white border-gray-700">
                               <DialogHeader>
                                 <DialogTitle>Schedule Online Class</DialogTitle>
                                 <DialogDescription>
@@ -376,7 +403,7 @@ export default function EnhancedTeacherDashboard() {
                                   </Select>
                                 </div>
                               </div>
-                              <Button type="submit" className="bg-purple-600 hover:bg-purple-700">Schedule Class</Button>
+                              <Button type="submit" variant="outline">Schedule Class</Button>
                             </DialogContent>
                           </Dialog>
                         </div>
@@ -386,7 +413,7 @@ export default function EnhancedTeacherDashboard() {
                 </TabsContent>
 
                 <TabsContent value="lessonplan" className="space-y-4">
-                  <Card className="bg-gray-800">
+                  <Card className="bg-gray-800 border-gray-700">
                     <CardHeader>
                       <CardTitle>AI-Assisted Lesson Planning</CardTitle>
                     </CardHeader>
@@ -397,7 +424,7 @@ export default function EnhancedTeacherDashboard() {
                           <Button 
                             onClick={generateLessonPlan} 
                             disabled={isGeneratingLessonPlan}
-                            className="bg-purple-600 hover:bg-purple-700"
+                            variant="outline"
                           >
                             {isGeneratingLessonPlan ? (
                               <>
@@ -449,12 +476,29 @@ export default function EnhancedTeacherDashboard() {
                           </div>
                           <Button 
                             onClick={() => setLessonPlan(null)} 
-                            className="mt-4 bg-purple-600 hover:bg-purple-700"
+                            className="mt-4"
+                            variant="outline"
                           >
                             Generate New Plan
                           </Button>
                         </div>
                       )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="onlineclass" className="space-y-4">
+                  <Card className="bg-gray-800 border-gray-700">
+                    <CardHeader>
+                      <CardTitle>Join Online Class</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Button 
+                        onClick={() => { router.push('/Teachers/onlineclass'); }}
+                        variant="outline"
+                      >
+                        Online Class
+                      </Button>
                     </CardContent>
                   </Card>
                 </TabsContent>
